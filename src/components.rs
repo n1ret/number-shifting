@@ -1,4 +1,11 @@
+use crossbeam_channel::Receiver;
+
 use bevy::prelude::*;
+
+#[derive(Resource)]
+pub struct StdinReceiver {
+    pub rx: Receiver<String>
+}
 
 pub enum Orientation {
     Horizontal,
@@ -11,12 +18,24 @@ pub struct FieldLine {
     pub position: usize
 }
 
+pub enum CellPosition {
+    TopBorder,
+    RightBorder,
+    BottomBorder,
+    LeftBorder,
+    BG,
+    Number
+}
+
 #[derive(Component)]
-pub enum CellComponent {
-    TopBorder { x: usize, y: usize },
-    RightBorder { x: usize, y: usize },
-    BottomBorder { x: usize, y: usize },
-    LeftBorder { x: usize, y: usize },
-    BG { x: usize, y: usize },
-    Number { x: usize, y: usize }
+pub struct CellComponent {
+    pub x: usize,
+    pub y: usize,
+    pub position: CellPosition
+}
+
+impl CellComponent {
+    pub fn new(x: usize, y: usize, position: CellPosition) -> Self {
+        Self { x, y, position }
+    }
 }
