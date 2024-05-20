@@ -1,10 +1,22 @@
+use std::io::{prelude::*, BufWriter};
+
 use rand::{Rng, prelude::*};
+use interprocess::local_socket::{prelude::*, GenericNamespaced, Stream};
 
 use crate::resources::Board;
 
+fn send_solve(solve: Vec<String>) {
+    let name = "number-shifting.sock".to_ns_name::<GenericNamespaced>().unwrap();
+
+    let mut conn = BufWriter::new(Stream::connect(name).unwrap());
+
+    conn.write_all(
+        (solve.join("\n")+"\n").as_bytes()
+    ).unwrap();
+}
+
 pub fn generate_level(level: usize) -> Board {
     let mut rng = thread_rng();
-
     
     let mut spawns = 3 + if level > 150 {
         level - 75
@@ -22,6 +34,7 @@ pub fn generate_level(level: usize) -> Board {
     }
     
     let mut board = Board::new(width, height);
+    let mut solve = Vec::new();
 
     for i in 0..spawns {
         let gen_pair = i == 0 || rng.gen_range(0..5) == 0;
@@ -58,22 +71,38 @@ pub fn generate_level(level: usize) -> Board {
                 if board.grid[y1][x1] == 0 && board.grid[y2][x2] == 0 {
                     board.grid[y1][x1] = length;
                     board.grid[y2][x2] = length;
+                    solve.push(format!(
+                        "{x1} {y1} {} -",
+                        "URDL".get(dir..=dir).unwrap()
+                    ));
                     break;
                 }
             } else {
                 if board.grid[y1][x1] != 0 && board.grid[y1][x1] != length && board.grid[y2][x2] == 0 {
                     board.grid[y2][x2] = length;
-                    if rng.gen_bool(0.5) {
+
+                    let mut add = rng.gen_bool(0.5);
+                    if !add {
+                        if board.grid[y1][x1] < length { add = !add }
                         board.grid[y1][x1] = (
                             board.grid[y1][x1] as i32 - length as i32
                         ).abs() as usize;
                     }
                     else { board.grid[y1][x1] += length; }
+                    let solve_dir = (dir + 2) % 4;
+                    solve.push(format!(
+                        "{x2} {y2} {} {}",
+                        "URDL".get(solve_dir..=solve_dir).unwrap(),
+                        if add { '-' } else { '+' }
+                    ));
+
                     break;
                 }
             }
         }
     }
+
+    send_solve(solve);
 
     board
 }

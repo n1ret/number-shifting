@@ -7,4 +7,6 @@ edition = "2021"
 
 [dependencies]
 bevy = "0.13.2"
+crossbeam-channel = "0.5.12"
+interprocess = "2.1.0"
 rand = "0.8.5"

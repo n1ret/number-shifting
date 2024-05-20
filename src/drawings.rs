@@ -5,7 +5,10 @@ use bevy::{
 };
 
 use crate::resources::Board;
-use crate::components::{FieldLine, CellComponent, Orientation::*};
+use crate::components::{
+    FieldLine, CellComponent, Orientation::*,
+    CellPosition::*
+};
 
 pub const WINDOW_SIZE: f32 = 720.;
 const LINE_WIDTH: f32 = 5.;
@@ -97,7 +100,7 @@ pub fn setup_draw(
                 ),
                 ..Default::default()
             },
-            CellComponent::Number { x, y }
+            CellComponent::new(x, y, Number)
         ));
 
         // Background
@@ -116,7 +119,7 @@ pub fn setup_draw(
                 )),
                 ..default()
             },
-            CellComponent::BG { x, y }
+            CellComponent::new(x, y, BG)
         ));
 
         // Borders
@@ -135,7 +138,7 @@ pub fn setup_draw(
                 )),
                 ..default()
             },
-            CellComponent::TopBorder { x, y }
+            CellComponent::new(x, y, TopBorder)
         ));
         commands.spawn((
             MaterialMesh2dBundle {
@@ -152,7 +155,7 @@ pub fn setup_draw(
                 )),
                 ..default()
             },
-            CellComponent::RightBorder { x, y }
+            CellComponent::new(x, y, RightBorder)
         ));
         commands.spawn((
             MaterialMesh2dBundle {
@@ -169,7 +172,7 @@ pub fn setup_draw(
                 )),
                 ..default()
             },
-            CellComponent::BottomBorder { x, y }
+            CellComponent::new(x, y, BottomBorder)
         ));
         commands.spawn((
             MaterialMesh2dBundle {
@@ -186,7 +189,7 @@ pub fn setup_draw(
                 )),
                 ..default()
             },
-            CellComponent::LeftBorder { x, y }
+            CellComponent::new(x, y, LeftBorder)
         ));
     } }
 }
@@ -227,11 +230,13 @@ pub fn update_draw(
 
     // Relocate numbers
     for (mut component_transform, cell_component) in numbers.iter_mut() {
-        match cell_component {
-            CellComponent::Number { x, y } => {
+        let x = cell_component.x;
+        let y = cell_component.y;
+        match cell_component.position {
+            Number => {
                 component_transform.translation = Vec3::new(
-                    *x as f32 * cell_size + cell_size/2.,
-                    *y as f32 * cell_size + cell_size/2.,
+                    x as f32 * cell_size + cell_size/2.,
+                    y as f32 * cell_size + cell_size/2.,
                     1.
                 );
                 component_transform.scale = Vec3::new(
@@ -240,10 +245,10 @@ pub fn update_draw(
                     1.
                 );
             }
-            CellComponent::BG { x, y } => {
+            BG => {
                 component_transform.translation = Vec3::new(
-                    *x as f32 * cell_size + cell_size/2.,
-                    *y as f32 * cell_size + cell_size/2.,
+                    x as f32 * cell_size + cell_size/2.,
+                    y as f32 * cell_size + cell_size/2.,
                     -1.
                 );
                 component_transform.scale = Vec3::new(
@@ -252,10 +257,10 @@ pub fn update_draw(
                     1.
                 );
             }
-            CellComponent::TopBorder { x, y } => {
+            TopBorder => {
                 component_transform.translation = Vec3::new(
-                    *x as f32 * cell_size + cell_size/2.0,
-                    *y as f32 * cell_size + cell_size,
+                    x as f32 * cell_size + cell_size/2.0,
+                    y as f32 * cell_size + cell_size,
                     1.
                 );
                 component_transform.scale = Vec3::new(
@@ -264,10 +269,10 @@ pub fn update_draw(
                     1.
                 );
             }
-            CellComponent::RightBorder { x, y } => {
+            RightBorder => {
                 component_transform.translation = Vec3::new(
-                    *x as f32 * cell_size + cell_size,
-                    *y as f32 * cell_size + cell_size/2.,
+                    x as f32 * cell_size + cell_size,
+                    y as f32 * cell_size + cell_size/2.,
                     1.
                 );
                 component_transform.scale = Vec3::new(
@@ -276,10 +281,10 @@ pub fn update_draw(
                     1.
                 );
             }
-            CellComponent::BottomBorder { x, y } => {
+            BottomBorder => {
                 component_transform.translation = Vec3::new(
-                    *x as f32 * cell_size + cell_size/2.,
-                    *y as f32 * cell_size,
+                    x as f32 * cell_size + cell_size/2.,
+                    y as f32 * cell_size,
                     1.
                 );
                 component_transform.scale = Vec3::new(
@@ -288,10 +293,10 @@ pub fn update_draw(
                     1.
                 );
             }
-            CellComponent::LeftBorder { x, y } => {
+            LeftBorder => {
                 component_transform.translation = Vec3::new(
-                    *x as f32 * cell_size,
-                    *y as f32 * cell_size + cell_size/2.,
+                    x as f32 * cell_size,
+                    y as f32 * cell_size + cell_size/2.,
                     1.
                 );
                 component_transform.scale = Vec3::new(
