@@ -8,8 +8,11 @@ use crate::resources::Board;
 fn send_solve(solve: Vec<String>) {
     let name = "number-shifting.sock".to_ns_name::<GenericNamespaced>().unwrap();
 
-    let mut conn = BufWriter::new(Stream::connect(name).unwrap());
+    let mut conn = if let Ok(conn) = Stream::connect(name) {
+        BufWriter::new(conn)
+    } else { return; };
 
+    conn.write(&solve.len().to_le_bytes()).unwrap();
     conn.write_all(
         (solve.join("\n")+"\n").as_bytes()
     ).unwrap();
@@ -102,6 +105,7 @@ pub fn generate_level(level: usize) -> Board {
         }
     }
 
+    solve.reverse();
     send_solve(solve);
 
     board

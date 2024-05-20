@@ -36,7 +36,8 @@ fn main() {
         let mut buf = String::new();
         loop {
             stdin.read_line(&mut buf).unwrap();
-            tx.send(buf.clone()).unwrap();
+            tx.send(buf.trim_end().to_string()).unwrap();
+            buf.clear();
         }
     });
 
@@ -187,6 +188,13 @@ fn draw_update(
         for (entity, cell_component) in numbers_entities.iter() {
             if cell_component.x == x1 && cell_component.y == y1 {
                 commands.entity(entity).despawn();
+            }
+        }
+        if board.grid[y2][x2] == 0 {
+            for (entity, cell_component) in numbers_entities.iter() {
+                if cell_component.x == x2 && cell_component.y == y2 {
+                    commands.entity(entity).despawn();
+                }
             }
         }
     }
